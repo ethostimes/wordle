@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle-like Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+        }
+        .tile {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        #keyboard {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+        .key {
+            margin: 0 2px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="game-board"></div>
+        <div id="keyboard"></div>
+    </div>
+    <script>
+        const words = ['HELLO', 'WORLD', 'LEARN', 'GAMES', 'PIZZA'];
+        const targetWord = words[Math.floor(Math.random() * words.length)];
+        let currentRow = 0;
+        let currentTile = 0;
+
+        function createGameBoard() {
+            const gameBoard = document.getElementById('game-board');
+            for (let i = 0; i < 6; i++) {
+                for (let j = 0; j < 5; j++) {
+                    const tile = document.createElement('div');
+                    tile.classList.add('tile');
+                    gameBoard.appendChild(tile);
+                }
+            }
+        }
+
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            const rows = [
+                ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+                ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+                ['Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'Backspace']
+            ];
+
+            rows.forEach(row => {
+                const keyboardRow = document.createElement('div');
+                keyboardRow.classList.add('keyboard-row');
+                row.forEach(key => {
+                    const keyElement = document.createElement('div');
+                    keyElement.classList.add('key');
+                    keyElement.textContent = key;
+                    keyElement.addEventListener('click', () => handleKeyInput(key));
+                    keyboardRow.appendChild(keyElement);
+                });
+                keyboard.appendChild(keyboardRow);
+            });
+        }
+
+        function handleKeyInput(key) {
+            if (key === 'Enter') {
+                if (currentTile === 5) checkGuess();
+            } else if (key === 'Backspace') {
+                if (currentTile > 0) {
+                    currentTile--;
+                    const tile = document.querySelector(`#game-board .tile:nth-child(${currentRow * 5 + currentTile + 1})`);
+                    tile.textContent = '';
+                }
+            } else if (currentTile < 5) {
+                const tile = document.querySelector(`#game-board .tile:nth-child(${currentRow * 5 + currentTile + 1})`);
+                tile.textContent = key;
+                currentTile++;
+            }
+        }
+
+        function checkGuess() {
+            const guessedWord = Array.from(document.querySelectorAll(`#game-board .tile`))
+                .slice(currentRow * 5, (currentRow + 1) * 5)
+                .map(tile => tile.textContent)
+                .join('');
+
+            for (let i = 0; i < 5; i++) {
+                const tile = document.querySelector(`#game-board .tile:nth-child(${currentRow * 5 + i + 1})`);
+                if (guessedWord[i] === targetWord[i]) {
+                    tile.style.backgroundColor = 'green';
+                } else if (targetWord.includes(guessedWord[i])) {
+                    tile.style.backgroundColor = 'yellow';
+                } else {
+                    tile.style.backgroundColor = 'gray';
+                }
+            }
+
+            if (guessedWord === targetWord) {
+                alert('Congratulations! You guessed the word!');
+            } else if (currentRow === 5) {
+                alert(`Game over! The word was ${targetWord}`);
+            } else {
+                currentRow++;
+                currentTile = 0;
+            }
+        }
+
+        createGameBoard();
+        createKeyboard();
+    </script>
+</body>
+</html>
